@@ -8,105 +8,92 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#define SHMKEY ((key_t)1497)
+#define SHMKEY ( ( key_t )1497 )
 
-typedef struct
-{
-	int value;
+typedef struct {
+        int value;
 } shared_mem;
 
-void process1()
-{
-	printf("this is process1 \n");
+static shared_mem *total;
 
-	for (int i = 0; i < 10; i++)
-	{
-		printf("-1\n");
-	}
+static _Noreturn void process1( ) {
+        printf( "this is process1 \n" );
 
-	exit(0);
+        total->value += 1;
+
+        exit( 0 );
 }
 
-void process2()
-{
-	printf("this is process2 \n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("-2\n");
-	}
+static _Noreturn void process2( ) {
+        printf( "this is process2 \n" );
 
-	exit(0);
+        total->value += 1;
+
+        exit( 0 );
 }
 
-void process3()
-{
-	printf("this is process3 \n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("-3\n");
-	}
+static _Noreturn void process3( ) {
+        printf( "this is process3 \n" );
 
-	exit(0);
+        total->value += 1;
+
+        exit( 0 );
 }
 
-void process4()
-{
-	printf("this is process4 \n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("-4\n");
-	}
+static _Noreturn void process4( ) {
+        printf( "this is process4 \n" );
 
-	exit(0);
+        total->value += 1;
+
+        exit( 0 );
 }
 
-int main()
-{
-	key_t key = ftok("./", 1234);
-	shared_mem *total;
+int main( ) {
+        key_t key = ftok( "./", 1234 );
 
-	int shmid, pid1, pid2, pid3, pid4, ID, status;
+        if ( key == -1 ) {
+                perror( "ftok" );
+        }
 
-	char *shmadd;
 
-	shmadd = (char *)0;
+        int shmid, pid1, pid2, pid3, pid4, ID, status;
 
-	if ((shmid = shmget(SHMKEY, sizeof(int), IPC_CREAT | 0666)) < 0)
-	{
-		perror("shmget");
-		exit(1);
-	}
+        char *shmadd;
 
-	if ((total = (shared_mem *)shmat(shmid, shmadd, 0)) == (shared_mem *)-1)
-	{
-		perror("shmat");
-		exit(0);
-	}
+        shmadd = ( char * )0;
 
-	total->value = 0;
+        if ( ( shmid = shmget( SHMKEY, sizeof( int ), IPC_CREAT | 0666 ) ) <
+             0 ) {
+                perror( "shmget" );
+                exit( 1 );
+        }
 
-	if ((pid1 = fork()) == 0)
-	{
-		process1();
-	}
+        if ( ( total = ( shared_mem * )shmat( shmid, shmadd, 0 ) ) ==
+             ( shared_mem * )-1 ) {
+                perror( "shmat" );
+                exit( 0 );
+        }
 
-	if ((pid2 = fork()) == 0)
-	{
-		process2();
-	}
+        total->value = 0;
 
-	if ((pid3 = fork()) == 0)
-	{
-		process3();
-	}
+        if ( ( pid1 = fork( ) ) == 0 ) {
+                process1( );
+        }
 
-	if ((pid4 = fork()) == 0)
-	{
-		process4();
-	}
+        if ( ( pid2 = fork( ) ) == 0 ) {
+                process2( );
+        }
 
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
-	waitpid(pid3, NULL, 0);
-	waitpid(pid4, NULL, 0);
+        if ( ( pid3 = fork( ) ) == 0 ) {
+                process3( );
+        }
+
+        if ( ( pid4 = fork( ) ) == 0 ) {
+                process4( );
+        }
+
+        waitpid( pid1, NULL, 0 );
+        waitpid( pid2, NULL, 0 );
+        waitpid( pid3, NULL, 0 );
+        waitpid( pid4, NULL, 0 );
 }
